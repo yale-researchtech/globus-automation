@@ -37,7 +37,7 @@ PYTHON
   Both types of authorizations can be executed from ''. Give it executable permissions.
    
     Usage:
-        ./'' 
+        ./globus_auto.py [OPTIONS] -source "Source Endpoint" -s "Source Path" -shared "Shared Endpoint" -d "Destination Path"
   
     (Note: it is NECESSARY to use double quotes [""])
     For full options, use -h.
@@ -51,6 +51,6 @@ BASH
    After logging in, give the script executable permissions.
    
       Usage:
-      ./''
+      ./
      For full options, use -h
     
