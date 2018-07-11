@@ -39,7 +39,7 @@ if [ $# -eq 0 ]; then
     help_and_exit
 fi
 ##Options
-label = "Example"
+label="Example"
 
 while [ $# -gt 0 ]; do
     key="$1"
@@ -68,7 +68,7 @@ while [ $# -gt 0 ]; do
             shift
             destination_path=$1
         ;;
-        -d|--delete)
+        -del|--delete)
             delete='yes'
         ;;
         --sync)
@@ -94,57 +94,57 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+## search endpoints if not provideds
+if [ -z $scope ]; then
+    scope="recently-used"
+fi
+if [ -z $filter ]; then
+    filter=""
+fi
+if [ -z $source_endpoint ] || [ -z $shared_endpoint ]; then
+    echo 'Source and Shared endpoints must be defined. If unknown, specify "find". Use -h for more info.'
+    exit 1
+fi
+if [ $source_endpoint == "find" ]; then
+    globus endpoint search --filter-scope $scope $filter
+    echo "Copy and paste ID of desired source endpoint"
+    read source_endpoint
+fi
+if [ $shared_endpoint == "find" ]; then
+  echo "Copy and paste ID of desired shared endpoint"
+  read source_endpoint
+fi
+
 #Make sure paths are specified and exist
-if [-z $source_path] || [-z $destination_path]; then
+if [ -z $source_path ] || [ -z $destination_path ]; then
     echo "Source path and destination path must be specified."
     exit 1
 else
   globus ls "$shared_endpoint:$destination_path" 1>/dev/null
-  if [$? -ne 0]; then
+  if [ $? -ne 0 ]; then
       echo "Destination path does not exist"
       exit 1
   fi
   globus ls "$source_endpoint:$source_path" 1>/dev/null
-  if [$? -ne 0]; then
+  if [ $? -ne 0 ]; then
       echo "Source path does not exist"
       exit 1
   fi
 fi
 
-## search endpoints if not provideds
-if [-z $scope]; then
-    scope = "recently-used"
-fi
-if [-z $filter]; then
-    filter = ""
-fi
-if [-z $source_endpoint] || [-z $shared_endpoint]; then
-    echo 'Source and Shared endpoints must be defined. If unknown, specify "find". Use -h for more info.'
-    exit 1
-fi
-if [$source_endpoint == "find"]; then
-    globus endpoint search --filter-scope $scope $filter
-    echo "Copy and paste ID of desired source endpoint"
-    read source_endpoint
-fi
-if [shared_endpoint == "find"]; then
-  echo "Copy and paste ID of desired shared endpoint"
-  read source_endpoint
-fi
-
 ## Do delete or sync stuffs
 basename=`basename "$source_path"`
-new_directory = "$destination_path$basename/"
-if [-n $directory]; then
+new_directory="$destination_path$basename"
+if [ -n "$directory" ]; then
     globus ls "$shared_endpoint:$new_directory" 1>/dev/null 2>/dev/null
-    if [$? -eq 0]; then
-        if [-n $delete]; then
+    if [ $? -eq 0 ]; then
+        if [ -n "$delete" ]; then
             echo "Destination directory, $new_directory, exists and will be deleted"
-            task_id=`globus delete --jmespath 'task_id' --label 'Share Data Example' -r "$shared_endpoint:$destination_directory" | tr -d '"'`
+            task_id=`globus delete --jmespath 'task_id' --label "$label" -r "$shared_endpoint:$new_directory" | tr -d '"'`
             globus task wait --timeout 600 $task_id
-            echo "Creating destination directory $new_directory"
+            echo "Delete successful. Creating destination directory $new_directory"
             globus mkdir "$shared_endpoint:$new_directory"
-        elif [-n $sync]; then
+        elif [ -n "$sync" ]; then
             echo "Destination directory, $new_directory, exists and will be synced."
         else
             echo "Destination, $new_directory, exists. Please specify delete or sync. Use -h for help."
@@ -156,14 +156,14 @@ if [-n $directory]; then
     fi
 fi
 ##do the actual transferring
-if [-n "$directory"]; then
+if [ -n "$directory" ]; then
     echo "transferring directory to: $new_directory"
-    exec globus transfer --recursive --label $label "$source_endpoint:$source_path" "$shared_endpoint:$new_directory"
-elif [-n $sync]; then
+    exec globus transfer --recursive --label "$label" "$source_endpoint:$source_path" "$shared_endpoint:$new_directory"
+elif [ -n "$sync" ]; then
     echo "syncing files between source $source_path and destination $destination_path"
-    exec globus transfer --recursive --sync-level mtime --label $label "$source_endpoint:$source_path" "$shared_endpoint:$new_directory"
+    exec globus transfer --recursive --sync-level mtime --label "$label" "$source_endpoint:$source_path" "$shared_endpoint:$new_directory"
 else
     echo "transferring file: $destination_path"
-    exec globus transfer --label $label "$source_endpoint:$source_path" "$shared_endpoint:$destination_path"
+    exec globus transfer --label "$label" "$source_endpoint:$source_path" "$shared_endpoint:$destination_path"
 
 fi
