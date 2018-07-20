@@ -51,6 +51,8 @@ BASH
    After logging in, give the script executable permissions.
    
       Usage:
-      ./
-     For full options, use -h
+      ./globus_auto_sh.sh [OPTIONS] -source UUID/find -s-path / -shared UUID/find -dest-path /
+      Note that quotations (to designate strings) are not necessary for any of the options, UUIDs, or paths.
+      If it's desperately important that you use quotations, feel free. You won't break anything. 
+      For full options, use -h. 
     
